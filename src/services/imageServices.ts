@@ -1,7 +1,7 @@
-import { createCanvas } from 'canvas';
-import fs from 'fs';
-import path from 'path';
-import { Country } from '../models/country';
+import { createCanvas } from "canvas";
+import fs from "fs";
+import path from "path";
+import { Country } from "../models/country";
 
 export class ImageService {
   static async generateSummaryImage(
@@ -13,103 +13,103 @@ export class ImageService {
     const width = 800;
     const height = 600;
     const canvas = createCanvas(width, height);
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
 
     // Background gradient
     const gradient = ctx.createLinearGradient(0, 0, 0, height);
-    gradient.addColorStop(0, '#1a1a2e');
-    gradient.addColorStop(1, '#16213e');
+    gradient.addColorStop(0, "#1a1a2e");
+    gradient.addColorStop(1, "#16213e");
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, width, height);
 
     // Title
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 36px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('Country Data Summary', width / 2, 60);
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 36px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("Country Data Summary", width / 2, 60);
 
     // Total countries
-    ctx.font = 'bold 24px Arial';
-    ctx.fillStyle = '#00d9ff';
+    ctx.font = "bold 24px Arial";
+    ctx.fillStyle = "#00d9ff";
     ctx.fillText(`Total Countries: ${totalCountries}`, width / 2, 120);
 
     // Top 5 countries header
-    ctx.font = 'bold 28px Arial';
-    ctx.fillStyle = '#ffffff';
-    ctx.textAlign = 'left';
-    ctx.fillText('Top 5 Countries by GDP', 50, 180);
+    ctx.font = "bold 28px Arial";
+    ctx.fillStyle = "#ffffff";
+    ctx.textAlign = "left";
+    ctx.fillText("Top 5 Countries by GDP", 50, 180);
 
     // Draw top countries
-    ctx.font = '18px Arial';
+    ctx.font = "18px Arial";
     let yPos = 220;
-    
+
     topCountries.forEach((country, index) => {
       // Rank circle
-      ctx.fillStyle = '#00d9ff';
+      ctx.fillStyle = "#00d9ff";
       ctx.beginPath();
       ctx.arc(70, yPos, 18, 0, Math.PI * 2);
       ctx.fill();
-      
-      ctx.fillStyle = '#1a1a2e';
-      ctx.font = 'bold 16px Arial';
-      ctx.textAlign = 'center';
+
+      ctx.fillStyle = "#1a1a2e";
+      ctx.font = "bold 16px Arial";
+      ctx.textAlign = "center";
       ctx.fillText(`${index + 1}`, 70, yPos + 6);
-      
+
       // Country name
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 20px Arial';
-      ctx.textAlign = 'left';
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 20px Arial";
+      ctx.textAlign = "left";
       ctx.fillText(country.name, 110, yPos + 5);
-      
+
       // GDP value
-      ctx.font = '16px Arial';
-      ctx.fillStyle = '#00d9ff';
-      const gdp = country.estimated_gdp 
+      ctx.font = "16px Arial";
+      ctx.fillStyle = "#00d9ff";
+      const gdp = country.estimated_gdp
         ? `$${(country.estimated_gdp / 1000000000).toFixed(2)}B`
-        : 'N/A';
+        : "N/A";
       ctx.fillText(`GDP: ${gdp}`, 110, yPos + 30);
-      
+
       // Currency
-      ctx.fillStyle = '#aaaaaa';
-      ctx.font = '14px Arial';
+      ctx.fillStyle = "#aaaaaa";
+      ctx.font = "14px Arial";
       ctx.fillText(
-        `Currency: ${country.currency_code || 'N/A'}`,
+        `Currency: ${country.currency_code || "N/A"}`,
         400,
         yPos + 5
       );
-      
+
       // Population
       ctx.fillText(
         `Population: ${country.population.toLocaleString()}`,
         400,
         yPos + 25
       );
-      
+
       yPos += 70;
     });
 
     // Last refresh timestamp
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '16px Arial';
-    ctx.textAlign = 'center';
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "16px Arial";
+    ctx.textAlign = "center";
     const timestamp = lastRefresh
       ? `Last Refreshed: ${lastRefresh.toISOString()}`
-      : 'Last Refreshed: Never';
+      : "Last Refreshed: Never";
     ctx.fillText(timestamp, width / 2, height - 30);
 
     // Border
-    ctx.strokeStyle = '#00d9ff';
+    ctx.strokeStyle = "#00d9ff";
     ctx.lineWidth = 3;
     ctx.strokeRect(10, 10, width - 20, height - 20);
 
     // Save image
-    const cacheDir = path.join(__dirname, '../../cache');
+    const cacheDir = path.join(__dirname, "../../cache");
     if (!fs.existsSync(cacheDir)) {
       fs.mkdirSync(cacheDir, { recursive: true });
     }
 
-    const imagePath = path.join(cacheDir, 'summary.png');
-    const buffer = canvas.toBuffer('image/png');
+    const imagePath = path.join(cacheDir, "summary.png");
+    const buffer = canvas.toBuffer("image/png");
     fs.writeFileSync(imagePath, buffer);
 
     return imagePath;
