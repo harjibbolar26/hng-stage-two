@@ -14,7 +14,7 @@ export class ImageService {
     const height = 600;
     const canvas = createCanvas(width, height);
     const ctx = canvas.getContext('2d');
-    
+
     // Background gradient
     const gradient = ctx.createLinearGradient(0, 0, 0, height);
     gradient.addColorStop(0, '#1a1a2e');

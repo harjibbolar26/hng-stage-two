@@ -17,6 +17,7 @@ class CountryModel {
             query += " AND LOWER(currency_code) = LOWER(?)";
             params.push(filters.currency);
         }
+        // Sorting
         if (filters?.sort === "gdp_desc") {
             query += " ORDER BY estimated_gdp DESC";
         }
@@ -36,14 +37,21 @@ class CountryModel {
         return rows;
     }
     static async findByName(name) {
-        const [rows] = await db_1.default.query("SELECT * FROM countries WHERE LOWER(name) = LOWER(?)", [name]);
-        if (rows.length === 0)
+        console.log(`[CountryModel] Searching for: "${name}"`);
+        const [rows] = await db_1.default.query("SELECT * FROM countries WHERE LOWER(TRIM(name)) = LOWER(TRIM(?))", [name]);
+        console.log(`[CountryModel] Query returned ${rows.length} row(s)`);
+        if (rows.length === 0) {
+            console.log(`[CountryModel] No country found for: "${name}"`);
             return null;
-        return rows[0];
+        }
+        const country = rows[0];
+        console.log(`[CountryModel] Found country: ${country.name} (ID: ${country.id})`);
+        return country;
     }
     static async upsert(country) {
         const existing = await this.findByName(country.name);
         if (existing) {
+            // Update existing country
             await db_1.default.query(`UPDATE countries 
          SET capital = ?, region = ?, population = ?, currency_code = ?, 
              exchange_rate = ?, estimated_gdp = ?, flag_url = ?, 
@@ -60,6 +68,7 @@ class CountryModel {
             ]);
         }
         else {
+            // Insert new country
             await db_1.default.query(`INSERT INTO countries 
          (name, capital, region, population, currency_code, exchange_rate, estimated_gdp, flag_url)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, [
@@ -87,14 +96,14 @@ class CountryModel {
         return rows;
     }
     static async updateRefreshMetadata() {
-        await db_1.default.query("UPDATE refresh_metadata SET last_refreshed_at = CURRENT_TIMESTAMP WHERE id = 1");
+        await db_1.default.query("UPDATE refresh_metadata SET last_refreshed_at = NOW() WHERE id = 1");
     }
     static async getLastRefreshTime() {
         const [rows] = await db_1.default.query("SELECT last_refreshed_at FROM refresh_metadata WHERE id = 1");
-        if (rows.length === 0)
+        if (rows.length === 0 || !rows[0].last_refreshed_at)
             return null;
         const timestamp = rows[0].last_refreshed_at;
-        return timestamp ? new Date(timestamp) : null;
+        return new Date(timestamp);
     }
 }
 exports.CountryModel = CountryModel;

@@ -1,4 +1,4 @@
-import { ResultSetHeader, RowDataPacket } from "mysql2";
+import { RowDataPacket, ResultSetHeader } from "mysql2";
 import pool from "../config/db";
 
 export interface Country {
@@ -46,6 +46,7 @@ export class CountryModel {
       params.push(filters.currency);
     }
 
+    // Sorting
     if (filters?.sort === "gdp_desc") {
       query += " ORDER BY estimated_gdp DESC";
     } else if (filters?.sort === "gdp_asc") {
@@ -63,19 +64,32 @@ export class CountryModel {
   }
 
   static async findByName(name: string): Promise<Country | null> {
+    console.log(`[CountryModel] Searching for: "${name}"`);
+
     const [rows] = await pool.query<RowDataPacket[]>(
-      "SELECT * FROM countries WHERE LOWER(name) = LOWER(?)",
+      "SELECT * FROM countries WHERE LOWER(TRIM(name)) = LOWER(TRIM(?))",
       [name]
     );
 
-    if (rows.length === 0) return null;
-    return rows[0] as Country;
+    console.log(`[CountryModel] Query returned ${rows.length} row(s)`);
+
+    if (rows.length === 0) {
+      console.log(`[CountryModel] No country found for: "${name}"`);
+      return null;
+    }
+
+    const country = rows[0] as Country;
+    console.log(
+      `[CountryModel] Found country: ${country.name} (ID: ${country.id})`
+    );
+    return country;
   }
 
   static async upsert(country: Country): Promise<void> {
     const existing = await this.findByName(country.name);
 
     if (existing) {
+      // Update existing country
       await pool.query(
         `UPDATE countries 
          SET capital = ?, region = ?, population = ?, currency_code = ?, 
@@ -94,6 +108,7 @@ export class CountryModel {
         ]
       );
     } else {
+      // Insert new country
       await pool.query(
         `INSERT INTO countries 
          (name, capital, region, population, currency_code, exchange_rate, estimated_gdp, flag_url)
@@ -117,7 +132,6 @@ export class CountryModel {
       "DELETE FROM countries WHERE LOWER(name) = LOWER(?)",
       [name]
     );
-
     return result.affectedRows > 0;
   }
 
@@ -125,7 +139,6 @@ export class CountryModel {
     const [rows] = await pool.query<RowDataPacket[]>(
       "SELECT COUNT(*) as total FROM countries"
     );
-
     return rows[0].total;
   }
 
@@ -139,7 +152,7 @@ export class CountryModel {
 
   static async updateRefreshMetadata(): Promise<void> {
     await pool.query(
-      "UPDATE refresh_metadata SET last_refreshed_at = CURRENT_TIMESTAMP WHERE id = 1"
+      "UPDATE refresh_metadata SET last_refreshed_at = NOW() WHERE id = 1"
     );
   }
 
@@ -147,8 +160,9 @@ export class CountryModel {
     const [rows] = await pool.query<RowDataPacket[]>(
       "SELECT last_refreshed_at FROM refresh_metadata WHERE id = 1"
     );
-    if (rows.length === 0) return null;
+    if (rows.length === 0 || !rows[0].last_refreshed_at) return null;
+
     const timestamp = rows[0].last_refreshed_at;
-    return timestamp ? new Date(timestamp) : null;
+    return new Date(timestamp);
   }
 }
