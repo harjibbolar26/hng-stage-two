@@ -7,7 +7,7 @@ yarn.lock
 .env
 
 # Build output
-dist/
+# dist/
 build/
 
 # Cache
