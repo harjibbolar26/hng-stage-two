@@ -39,7 +39,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const cors_1 = __importDefault(require("cors"));
-const countryRoutes_1 = __importDefault(require("../src/routes/countryRoutes"));
+const countryRoutes_1 = __importDefault(require("./routes/countryRoutes"));
 const path_1 = __importDefault(require("path"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
@@ -47,7 +47,7 @@ app.use((0, cors_1.default)());
 app.use(express_1.default.json());
 app.use("/cache", express_1.default.static(path_1.default.join(__dirname, "../cache")));
 app.get("/status", async (req, res) => {
-    const { CountryController } = await Promise.resolve().then(() => __importStar(require("../src/controllers/countryControllers")));
+    const { CountryController } = await Promise.resolve().then(() => __importStar(require("./controllers/countryControllers")));
     return CountryController.getStatus(req, res);
 });
 app.use("/countries", countryRoutes_1.default);

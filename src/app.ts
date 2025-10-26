@@ -1,7 +1,7 @@
 import express, { NextFunction, Request, Response } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-import countryRoutes from "../src/routes/countryRoutes";
+import countryRoutes from "./routes/countryRoutes";
 import path from "path";
 
 dotenv.config();
@@ -13,7 +13,7 @@ app.use("/cache", express.static(path.join(__dirname, "../cache")));
 
 app.get("/status", async (req, res) => {
   const { CountryController } = await import(
-    "../src/controllers/countryControllers"
+    "./controllers/countryControllers"
   );
   return CountryController.getStatus(req, res);
 });
