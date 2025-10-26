@@ -11,8 +11,8 @@ yarn.lock
 build/
 
 # Cache
-cache/
-*.png
+# cache/
+# *.png
 
 # Logs
 logs/
